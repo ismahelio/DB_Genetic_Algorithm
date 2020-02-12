@@ -7,19 +7,31 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import Main_LineUp
+
+test_list = Main_LineUp.genetic_algorithm()
+print(test_list)
+dash_lines = []
+for line in test_list:
+    dash_line = dcc.Markdown(line)
+    dash_lines.append(dash_line)
+
+
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+server = app.server
+
+
 opt = []
 for i in range(20):
     t_dict = {'label': str(i), 'value': str(i)}
     opt.append(t_dict)
 
-
-app.layout = html.Div([
+dash_objects = [
     html.H1(children="Dragon Boat Genetic Algorithm"),
     html.H2(children="By Ismael Sanz"),
     dcc.Checklist(
@@ -32,7 +44,11 @@ app.layout = html.Div([
     dcc.Input(id='my-id2', value='input', type='text'),
     html.Div(id='my-div2'),
     html.Div(id='my-div3')
-])
+]
+
+dash_objects = dash_objects + dash_lines
+
+app.layout = html.Div(dash_objects)
 
 
 @app.callback(

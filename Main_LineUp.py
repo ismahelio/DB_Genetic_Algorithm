@@ -156,90 +156,97 @@ def mutation(boats):
 
 
 
+def genetic_algorithm():
+    path = r"C:\Users\user\OneDrive\SpanishDragons\Spanish Dragons paddlers.csv"
+    paddlers = []
+    with open(path, 'r') as csvFile:
+        reader = csv.reader(csvFile)
+        next(reader)  # skip header
+        for row in reader:
+            paddler = Paddler(row[0], row[4], float(row[3]), row[5], row[6])
+            paddlers.append(paddler)
 
-path = r"C:\Users\user\OneDrive\SpanishDragons\Spanish Dragons paddlers.csv"
-paddlers = []
-with open(path, 'r') as csvFile:
-    reader = csv.reader(csvFile)
-    next(reader)  # skip header
-    for row in reader:
-        paddler = Paddler(row[0], row[4], float(row[3]), row[5], row[6])
-        paddlers.append(paddler)
+    shuffle(paddlers)
 
-shuffle(paddlers)
+    #Divide the boat: 3 rows(pacers), 4 rows(engine) and 3 rows(rockets) - Division PER
+    pacers = []
+    engine = []
+    rocket = []
+    for paddler in paddlers:
+        if paddler.position == "P" and len(pacers) < 6:
+            pacers.append(paddler)
+        if paddler.position == "E" and len(engine) < 8:
+            engine.append(paddler)
+        if paddler.position == "R" and len(rocket) < 6:
+            rocket.append(paddler)
 
-#Divide the boat: 3 rows(pacers), 4 rows(engine) and 3 rows(rockets) - Division PER
-pacers = []
-engine = []
-rocket = []
-for paddler in paddlers:
-    if paddler.position == "P" and len(pacers) < 6:
-        pacers.append(paddler)
-    if paddler.position == "E" and len(engine) < 8:
-        engine.append(paddler)
-    if paddler.position == "R" and len(rocket) < 6:
-        rocket.append(paddler)
-
-# One of the possible boats
-boat = [pacers, engine, rocket]
-
-
-
-
-n_people =16
-iterations = 200
-gen = generationx(boat, n_people)
+    # One of the possible boats
+    boat = [pacers, engine, rocket]
 
 
 
-for i in range(iterations):
-    sorted_boats = []
-    for b in gen:
-        fitness = check_weight(b) + check_preference(b, 5, 2) + check_weight_one_row(b)
-        sorted_boats.append([b, fitness])
-        #print (fitness)
 
-    # Sort the boats by fitness and select half of the n_people as the best candidates
-    sorted_boats = sorted(sorted_boats, key=lambda x: x[1])
-
-    #for fitness in sorted_boats:
-     #   print(fitness[1])
-
-    half_sel = int(n_people/2)
-    sorted_boats = sorted_boats[:half_sel]
-    # Get only the boats with no fitness
-    sorted_boats = [x[0] for x in sorted_boats]
+    n_people =16
+    iterations = 200
+    gen = generationx(boat, n_people)
 
 
-    candidates = sorted_boats
+
+    for i in range(iterations):
+        sorted_boats = []
+        for b in gen:
+            fitness = check_weight(b) + check_preference(b, 5, 2) + check_weight_one_row(b)
+            sorted_boats.append([b, fitness])
+            #print (fitness)
+
+        # Sort the boats by fitness and select half of the n_people as the best candidates
+        sorted_boats = sorted(sorted_boats, key=lambda x: x[1])
+
+        #for fitness in sorted_boats:
+         #   print(fitness[1])
+
+        half_sel = int(n_people/2)
+        sorted_boats = sorted_boats[:half_sel]
+        # Get only the boats with no fitness
+        sorted_boats = [x[0] for x in sorted_boats]
 
 
-    new_generation = breed(candidates)
-    #copy_gen = copy.copy(new_generation)
-    mutations = mutation(new_generation)
+        candidates = sorted_boats
 
-    candidates.extend(new_generation)
-    candidates.extend(mutations)
 
-    #Add more random generation
-    new_gen = generationx(boat, half_sel)
-    candidates.extend(new_gen)
+        new_generation = breed(candidates)
+        #copy_gen = copy.copy(new_generation)
+        mutations = mutation(new_generation)
 
-    gen = []
-    gen = candidates
+        candidates.extend(new_generation)
+        candidates.extend(mutations)
 
-#Best option
-Best_Option = sorted_boats[0]
+        #Add more random generation
+        new_gen = generationx(boat, half_sel)
+        candidates.extend(new_gen)
 
-print("fitness weight is: " + str(check_weight(Best_Option)))
+        gen = []
+        gen = candidates
 
-print("Boat Arrangement Optimized")
-for zone in Best_Option:
-    for i in range(0,len(zone), 2):
-        print(zone[i].name + "_" + str(zone[i].weight) + " / " + zone[i+1].name + "_" + str(zone[i+1].weight))
+    #Best option
+    Best_Option = sorted_boats[0]
 
-print("weigth diff: " + str(check_weight_side_dif(Best_Option)))
+    print("fitness weight is: " + str(check_weight(Best_Option)))
 
-print(time.time()-start)
+    print("Boat Arrangement Optimized")
+    line_up = []
+    for zone in Best_Option:
 
+        for i in range(0,len(zone), 2):
+
+            line = zone[i].name + "_" + str(zone[i].weight) + " / " + zone[i+1].name + "_" + str(zone[i+1].weight)
+
+            line_up.append(line)
+
+    print("weigth diff: " + str(check_weight_side_dif(Best_Option)))
+
+    print(time.time()-start)
+
+
+    return line_up
 
