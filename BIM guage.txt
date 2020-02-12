@@ -1,0 +1,31 @@
+- It is a very generic question, depending on the discipline and the use, measuring the quiality of a beam model can by done by different parameters.
+
+Lets say the user is the one who wants to visualize data from the BIM model on a dashboard.
+
+- Extract families (family types together with the category they belong and number of each family inside the model)
+
+- Data from categories that shows relevant information for the user analyzing the model:
+
+- As Sheets with the specific views for each one 
+- Schedules with their specific fields
+
+- Data relevant to a specific schedule into more detail. It will make sense to do this ff there is an existing schedule inside the BIM model with required information.
+
+- Geometry: it could be extracted as string (json format for example using Speckle) and visualize it in the dashboard. For example, to visualize just the facade elements from a model with much more geometrical information.
+
+- If there are no schedules set up inside revit regarding data that can be potentially useful for the dashboard, specific information can be extracted too. For example pipe types inside a revit model for MEP by floor and by type.
+
+- Who has been working in the file and for how long. Username + time spend with the file open.
+
+I will describe 2 possible ways of extracting the information from a BIM model, in this case REVIT:
+
+1. Use dynamo to get all the parameters/objects containing information valuable for the dashboard. Curate and organize properly all this data. 
+
+2. Create a C# component inside revit that extracts, curates and organizes all the data relevant for the dashboard.
+
+After all the data is ready, there are different ways of generating dashboards. One way will be writting a python script and creating the dashboard using free opensoure libraries such as dash and plotly. Once the script is ready there are 2 possible scenarios:
+
+1. The user wants to run the script within Revit. In this case, the python script can be run through Dynamo or C# passing the relevant parameters to the script as inputs(for example as a json string).
+
+2. The user wants to visualize the dashboard without the need of openning Revit. In this case we will need first to extract the relevant data from Revit, and save it as json, csv, db, or whatever other format is more convinient for each case. Once the data is ready and out of Revit, the python script will read directly the externaliced data as in input. This method will aloow to visualize whatever is needed outside revit.
+
