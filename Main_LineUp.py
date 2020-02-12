@@ -157,7 +157,7 @@ def mutation(boats):
 
 
 def genetic_algorithm():
-    path = r"C:\Users\user\OneDrive\SpanishDragons\Spanish Dragons paddlers.csv"
+    path = r"csv_data/Spanish Dragons paddlers.csv"
     paddlers = []
     with open(path, 'r') as csvFile:
         reader = csv.reader(csvFile)

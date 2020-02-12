@@ -1,5 +1,5 @@
 import sys
-path = r"C:\Users\user\OneDrive\SpanishDragons\LineUp\venv\Lib\site-packages"
+path = r"venv\Lib\site-packages"
 sys.path.append(path)
 print(sys.path)
 
