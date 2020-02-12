@@ -29,3 +29,4 @@ After all the data is ready, there are different ways of generating dashboards. 
 
 2. The user wants to visualize the dashboard without the need of openning Revit. In this case we will need first to extract the relevant data from Revit, and save it as json, csv, db, or whatever other format is more convinient for each case. Once the data is ready and out of Revit, the python script will read directly the externaliced data as in input. This method will aloow to visualize whatever is needed outside revit.
 
+xxxx
