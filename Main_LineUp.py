@@ -20,14 +20,14 @@ def generate_boat(paddlers):
     return new_boat
 
 # Create a the generation
-def  generationx(paddlers, n):
+def  generationx(paddlers, fixed_paddlers, n):
 
     gen = []
     for i in range(n):
         new_boat = copy.copy(paddlers)
-        a = sample(new_boat[0], len(new_boat[0]))
-        b = sample(new_boat[1], len(new_boat[1]))
-        c = sample(new_boat[2], len(new_boat[2]))
+        a = mix_values(new_boat[0], fixed_paddlers[0:6])
+        b = mix_values(new_boat[1], fixed_paddlers[6:14])
+        c = mix_values(new_boat[2], fixed_paddlers[14:20])
         gen.append([a,b,c])
     return gen
 
@@ -82,10 +82,6 @@ def check_weight_one_row(boat):
     return fitness
 
 
-
-
-
-
 # Check Preference Side
 """bothsides_inc, multiplies the punishment if the paddler is not at the right side and can not do both sides"""
 def check_preference(boat, punishment, bothsides_inc):
@@ -128,7 +124,7 @@ def breed(boats):
     return new_gen
 
 
-def mutation(boats):
+def mutation(boats, fixed_paddlers):
     mutations = []
     for old_boat in boats:
         #first decide how many zones to mutate
@@ -145,21 +141,60 @@ def mutation(boats):
             if edit:
                 change_id_1 = randrange(0, len(new_boat[i]))
                 change_id_2 = randrange(0, len(new_boat[i]))
-                paddler_1 = copy.copy(old_boat[i][change_id_1])
-                paddler_2 = copy.copy(old_boat[i][change_id_2])
-                new_boat[i][change_id_1] = paddler_2
-                new_boat[i][change_id_2] = paddler_1
+                if fixed_paddlers[change_id_1] is not None and fixed_paddlers[change_id_2] is not None:
+                    paddler_1 = copy.copy(old_boat[i][change_id_1])
+                    paddler_2 = copy.copy(old_boat[i][change_id_2])
+                    new_boat[i][change_id_1] = paddler_2
+                    new_boat[i][change_id_2] = paddler_1
         mutations.append(new_boat)
 
     return mutations
 
 
+def fill_in(list, element):
+    """ Adds the element into the first empty spot in the list """
+    for i in range(len(list)):
+        if not list[i]:
+            list[i] = element
+            break
+    
+    return list
+    
+    
+def get_paddler(paddlers, name):
+    """ Returns paddler according to given name """
+    paddler = None
+    for i in range(len(paddlers)):
+        if paddlers[i].name == name:
+            paddler = paddlers[i]
+    
+    return paddler
+ 
 
+def mix_values(new_boat, fixed_paddlers):
+    """ Shuffles the new_boat list by keeping fixed paddlers at their position """
+    new_boat_slice = []
+    result = []
+    for i in range(len(new_boat)):
+        if fixed_paddlers[i] is None:
+            new_boat_slice.append(new_boat[i])
+    shuffled_boat = sample(new_boat_slice, len(new_boat_slice))
+    j = 0
+    for i in range(len(new_boat)):
+        if fixed_paddlers[i] is not None:
+            result.append(fixed_paddlers[i])
+        else:
+            result.append(shuffled_boat[j])
+            j += 1
+    return result
+
+    
 
 def genetic_algorithm():
-    path = r"csv_data/Spanish Dragons paddlers.csv"
+    paddlers_path = r"csv_data/Spanish Dragons paddlers.csv"
     paddlers = []
-    with open(path, 'r') as csvFile:
+    fixed_paddlers = []
+    with open(paddlers_path, 'r') as csvFile:
         reader = csv.reader(csvFile)
         next(reader)  # skip header
         for row in reader:
@@ -168,27 +203,49 @@ def genetic_algorithm():
 
     shuffle(paddlers)
 
-    #Divide the boat: 3 rows(pacers), 4 rows(engine) and 3 rows(rockets) - Division PER
-    pacers = []
-    engine = []
-    rocket = []
+    # Divide the boat: 3 rows(pacers), 4 rows(engine) and 3 rows(rockets) - Division PER
+    pacers = [None] * 6
+    engine = [None] * 8
+    rocket = [None] * 6
+    
+    # Assign fixed positions
+    fixed_pos_path = r"csv_data/Fixed positions.csv"
+    with open(fixed_pos_path, 'r') as csvFile:
+        reader = csv.reader(csvFile)
+        next(reader)  # skip header
+        for row in reader:
+            fixed_paddlers.append(get_paddler(paddlers,row[2]))
+            fixed_paddlers.append(get_paddler(paddlers,row[3]))
+            if len(row[2]) > 0:
+                if row[1] == "Pacers":
+                    pacers[int(row[0])*2-2] = get_paddler(paddlers,row[2])
+                elif row[1] == "Engine":
+                    engine[int(row[0])*2-8] = get_paddler(paddlers,row[2])
+                elif row[1] == "Rocket":
+                    rocket[int(row[0])*2-16] = get_paddler(paddlers,row[2])
+            elif len(row[3]) > 0:
+                if row[1] == "Pacers":
+                    pacers[int(row[0])*2-1] = get_paddler(paddlers,row[3])
+                elif row[1] == "Engine":
+                    engine[int(row[0])*2-7] = get_paddler(paddlers,row[3])
+                elif row[1] == "Rocket":
+                    rocket[int(row[0])*2-15] = get_paddler(paddlers,row[3])
+    
     for paddler in paddlers:
-        if paddler.position == "P" and len(pacers) < 6:
-            pacers.append(paddler)
-        if paddler.position == "E" and len(engine) < 8:
-            engine.append(paddler)
-        if paddler.position == "R" and len(rocket) < 6:
-            rocket.append(paddler)
+        if paddler not in fixed_paddlers:
+            if paddler.position == "P" and not all(pacers):
+                pacers = fill_in(pacers, paddler)
+            if paddler.position == "E" and not all(engine):
+                engine = fill_in(engine, paddler)
+            if paddler.position == "R" and not all(rocket):
+                rocket = fill_in(rocket, paddler)
 
     # One of the possible boats
     boat = [pacers, engine, rocket]
 
-
-
-
     n_people =16
     iterations = 200
-    gen = generationx(boat, n_people)
+    gen = generationx(boat, fixed_paddlers, n_people)
 
 
 
@@ -216,13 +273,13 @@ def genetic_algorithm():
 
         new_generation = breed(candidates)
         #copy_gen = copy.copy(new_generation)
-        mutations = mutation(new_generation)
+        mutations = mutation(new_generation, fixed_paddlers)
 
         candidates.extend(new_generation)
         candidates.extend(mutations)
 
         #Add more random generation
-        new_gen = generationx(boat, half_sel)
+        new_gen = generationx(boat, fixed_paddlers, half_sel)
         candidates.extend(new_gen)
 
         gen = []
@@ -249,4 +306,3 @@ def genetic_algorithm():
 
 
     return line_up
-
